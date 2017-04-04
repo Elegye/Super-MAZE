@@ -1,0 +1,25 @@
+version 1 :
+	un seul chemin, sans embranchement (mais sans collision aussi)
+	***VERSION FONCTIONNELLE***
+
+version 2 :
+	chemins avec embranchements ; les embranchements sont gérés par le décorateur
+	***VERSION NON FONCTIONNELLE***
+
+version 3 :
+	chemins avec embranchements ; les embranchements sont gérés par les fonctions de déplacement
+	***VERSION FONCTIONNELLE***
+
+version 4 :
+	version mixte déplacements aléatoires / forcés (pour ne pas laisser de trou dans le labyrinthe)
+	choix du mode de déplacement par une analyse ligne par ligne des déplacements possible
+	(puis-je rencontrer un autre traceur sur ma ligne ? et sur la ligne du dessus/dessous ? et celle encore au-dessus/dessous ?)
+	***VERSION NON FONCTIONNELLE***
+
+version 5 :
+	version mixte déplacements aléatoires / forcés (pour ne pas laisser de trou dans le labyrinthe)
+	choix du mode de déplacement par une analyse récusive case par case (au lieu de ligne par ligne)
+	***VERSION FONCTIONNELLE***
+
+
+***version finale : 5***
