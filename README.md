@@ -1,1 +1,1 @@
-# Super-MAZE
+# Super MAZE
