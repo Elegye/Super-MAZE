@@ -195,14 +195,15 @@ i est nécessaire pour être rajouté à self.remove
                                                 cursor.forward(Laby.UNIT)
                                                 cursor.down()
                                         else :#sinon, on dessine ET on rajoute le mur qui correspond
-                                                self.add_wall(*cursor.pos())
+                                                start = cursor.pos()
                                                 cursor.forward(Laby.UNIT)
+                                                self.add_wall(start,cursor.pos())
                         t.right(90)
                         t_.left(90)
                 self.screen.update()#cette ligne semble nécessaire ; elle met à jour le dessin global du labyrinthe
 
         def add_wall(self,pos_a,pos_b):
-                """Ajoute le mur de coordonnées (x,y) à la bonne clé de self.walls"""
+                """Ajoute le mur de coordonnées délimité par pos_a et pos_b à la bonne clé de self.walls"""
                 if pos_a[0] == pos_b[0]:#le mur est vertical
                         self.walls["v"].add((pos_a[0],max(pos_a[1],pos_b[1])))
                 else :#le mur est horizontal
