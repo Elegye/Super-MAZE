@@ -195,7 +195,7 @@ i est nécessaire pour être rajouté à self.remove
                                                 cursor.forward(Laby.UNIT)
                                                 cursor.down()
                                         else :#sinon, on dessine ET on rajoute le mur qui correspond
-                                                self.add_wall(cursor.pos())
+                                                self.add_wall(*cursor.pos())
                                                 cursor.forward(Laby.UNIT)
                         t.right(90)
                         t_.left(90)
