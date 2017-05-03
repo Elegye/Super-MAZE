@@ -20,12 +20,6 @@ logs :
 """
 players = [0, 1]
 
-keys_up = ["Up", "Z"]
-keys_down = ["Down", "S"]
-keys_left = ["Left", "Q"]
-keys_right = ["Right", "D"]
-keys_redo = ["A", "X"]
-
 class Laby :
 
         UNIT = 20
@@ -582,7 +576,7 @@ class Parameters :
     def __init__(self, parent):
         self.window = tkinter.Toplevel(parent, height = 600, width = 400)
         self.window.title("Configuration")
-        #Nos labels sont dans des listes
+        #Nos labels sont dans des listesa
         self.labels = {}
         #Nos données aussi
         self.data = {
@@ -597,13 +591,14 @@ class Parameters :
                     }
 
         #Exemple d'une configuration
-        self.players = ignition.players
+        self.players = Ignition.PLAYERS
         self.get_settings()
         self.test = "Test"
 
     def set_players(self):
         for i in range(int(self.data["players"].get())):
-            self.players = list(range(i+1))
+            Ignition.PLAYERS = list(range(i+1))
+            print(Ignition.PLAYERS)
         self.get_settings()
 
     def set_settings(self):
@@ -627,7 +622,7 @@ class Parameters :
         self.labels["Commandes"] = tkinter.Label(self.window, text="Commandes").grid(column=1, row=3)
         self.labels["Infos"] = tkinter.Label(self.window, text="Laisser vide pour ne rien changer")
 
-        for i in range(len(self.players)):
+        for i in range(len(Ignition.PLAYERS)):
             #On fait les labels de la page
             self.labels["players"] = tkinter.Label(self.window, text="Joueur "+str(i+1)).grid(column=2+i, row=4)
             self.labels["keys_up"] = tkinter.Label(self.window, text="Haut").grid(column=1, row=5)
@@ -646,9 +641,10 @@ class Parameters :
 
 
 class Ignition :
+    PLAYERS = [0,1]
 
-    def __init__(self, players, buildfile):
-        self.players = [0,1]
+    def __init__(self):
+        self.players = Ignition.PLAYERS
         self.players_color = ["red", "green", "blue", "purple", "green", "yellow", "black", "pink", "grey"]
         self.buildfile = buildfile
         self.color = 0
@@ -674,7 +670,7 @@ class Ignition :
 
     def init_solo_game(self):
         self.is_in_game = True
-        self.main_window.title("Super Maze :: Partie Solo")
+        self.main_window.title("Super Maze - Partie Solo")
         self.canvas = turtle.ScrolledCanvas(self.main_window)
         self.screen = turtle.TurtleScreen(self.canvas)
 
@@ -683,13 +679,46 @@ class Ignition :
         self.game = Game(self.canvas, self.screen, [0], self)
 
         #On initialise nos turtles de joueur(s)
-        for i in range(len(self.game.players)):
+        for i in self.game.players:
+            print(i)
             self.game.players[i] = turtle.RawTurtle(self.screen)
             self.game.players[i].st()
             self.game.players[i].up()
             self.game.players[i].home()
             self.game.players[i].speed(0)
             self.color = self.players_color[randint(0, len(self.players_color)-1)]
+            self.game.players[i].fillcolor(self.color)
+            self.game.move_number.append(0)
+            self.game.coord_player.append([])
+            #On affiche la couleur du joueur:
+            tkinter.Label(self.main_window, text="Joueur "+str(i+1), fg=self.game.players[i].fillcolor()).pack()
+
+        self.laby = Laby(self.canvas, self.screen, self.buildfile)
+        self.screen.tracer(delay=None)
+
+        self.game.get_walls(self.laby.walls)
+        self.game.get_out(self.laby.out)
+
+        self.main_window.bind("<Key>", self.game.binding)
+
+    def init_multi_game(self):
+        self.is_in_game = True
+        self.main_window.title("Super Maze - Partie Locale")
+        self.canvas = turtle.ScrolledCanvas(self.main_window)
+        self.screen = turtle.TurtleScreen(self.canvas)
+
+        self.canvas.pack(fill="both",expand=True)
+
+        self.game = Game(self.canvas, self.screen, Ignition.PLAYERS, self)
+
+        #On initialise nos turtles de joueur(s)
+        for i in range(len(Ignition.PLAYERS)):
+            self.game.players[i] = turtle.RawTurtle(self.screen)
+            self.game.players[i].st()
+            self.game.players[i].up()
+            self.game.players[i].home()
+            self.game.players[i].speed(0)
+            self.color = self.players_color[randint(0, len(self.players_color))]
             self.game.players[i].fillcolor(self.color)
             self.game.move_number.append(0)
             self.game.coord_player.append([])
@@ -705,37 +734,8 @@ class Ignition :
 
         self.main_window.bind("<Key>", self.game.binding)
 
-    def init_multi_game(self):
-        self.is_in_game = True
-        self.main_window.title("Super Maze :: Partie Locale")
-        self.canvas = turtle.ScrolledCanvas(self.main_window)
-        self.screen = turtle.TurtleScreen(self.canvas)
-
-        self.canvas.pack(fill="both",expand=True)
-
-        self.game = Game(self.canvas, self.screen, self.players, self)
-
-        #On initialise nos turtles de joueur(s)
-        for i in range(len(self.game.players)):
-            self.game.players[i] = turtle.RawTurtle(self.screen)
-            self.game.players[i].st()
-            self.game.players[i].up()
-            self.game.players[i].home()
-            self.game.players[i].speed(0)
-            self.color = self.players_color[randint(0, len(self.players_color))]
-            self.game.players[i].fillcolor(self.color)
-            self.game.move_number.append(0)
-            self.game.coord_player.append([])
-
-
-        self.laby = Laby(self.canvas, self.screen, self.buildfile)
-        self.screen.tracer(delay=None)
-
-        self.game.get_walls(self.laby.walls)
-        self.game.get_out(self.laby.out)
-
-        self.main_window.bind("<Key>", self.game.binding)
-
+    def init_network_game(self):
+        return True
     def home_binding(self, event):
         if self.is_in_game == False:
             if event.y > 160 and event.y < 210 and event.x > 370 and event.x < 630:
@@ -743,6 +743,7 @@ class Ignition :
                 self.init_solo_game()
             elif event.y > 430 and event.y < 480 and event.x > 160 and event.x < 440:
                 self.main_canvas.pack_forget()
+                print(Ignition.PLAYERS)
                 self.init_multi_game()
             elif event.y > 560 and event.y < 610 and event.x > 500 and event.x < 830:
                 self.main_canvas.pack_forget()
@@ -754,6 +755,7 @@ class Ignition :
 
 
 if __name__ == '__main__':
+    #Pour la ligne de commande
         from sys import argv
         buildfile = None
         if len(argv) > 1 :
@@ -761,4 +763,4 @@ if __name__ == '__main__':
         if len(argv) > 2 :
                 Laby.RAY = int(argv[2])
 
-        ignition = Ignition(players, buildfile)
+        ignition = Ignition()
