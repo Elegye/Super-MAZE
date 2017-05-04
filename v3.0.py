@@ -25,17 +25,17 @@ class Laby :
         UNIT = 20
         RAY = 200
         # WARNING : (2*RAY)/UNIT MUST BE integer
-        FREQ = 30
+        FREQ = 60
         REACH = 20#la 'portée' d'un curseur
 
-        def __init__(self,canvas, screen, buildfile=None):
+        def __init__(self,canvas,screen, buildfile=None):
                 """Attributs :
                 - self.canvas (passé comme paramètre)
                 - self.screen : couche de liaison entre turtle et tkinter
-                - self.walls : contient, dans deux clés séparées, les murs verticaux et horizontaux"""
+                - self.walls : contient l'enseble des murs"""
                 self.canvas = canvas
-                #self.screen = turtle.TurtleScreen(self.canvas)
                 self.screen = screen
+
                 self.screen.tracer(n=Laby.FREQ)
 
                 left = turtle.RawTurtle(self.screen)#le mur gauche
@@ -50,10 +50,8 @@ class Laby :
                 left.ht()
                 right.ht()
 
-                self.walls = dict(v=set(),h=set())
+                self.walls = set()
                 # cet attribut contient les coordonnées des murs tracés
-                # (v:vertical ; h:horizontal)
-                # un mur est défini par les coordonnées du coin en haut à droite
 
                 self.out = None#les coordonnées de la sortie
                 #WARNING : la sortie (Laby.RAY,Laby.RAY) n'est pas valable, car elle code pour deux côtés (elle est en haut ET à droite)
@@ -148,28 +146,22 @@ class Laby :
 
         def can_goon(self,left,right,i):
                 """Cette méthode teste si la case devant le couple (left,right) est libre ;
-sinon, si elle a atteint le bord et que la sortie (self.out) n'est pas encore définie, elle crée cette sortie.
-sinon, elle crée un cul-de-sac.
-i est nécessaire pour être rajouté à self.remove
-        retour : booléeen : la case devant soi
-"""
+                sinon, si elle a atteint le bord et que la sortie (self.out) n'est pas encore définie, elle crée cette sortie.
+                sinon, elle crée un cul-de-sac.
+                i est nécessaire pour être rajouté à self.remove
+                retour : booléeen : la case devant soi"""
                 m, (fl,fr) = self.ahead(left,right)
                 if abs(m[0])>Laby.RAY or abs(m[1])>Laby.RAY :
                         #limites atteintes
-
+                        pos_a = left.pos()
+                        pos_b = right.pos()
+                        if self.out is None  :
+                                self.out = (Laby.middle((pos_a[0],pos_b[0]),(pos_a[1],pos_b[1])))
+                        else :#il n'y a pas lieu de créer une sortie ; on fait une imapasse
+                               left.goto(right.pos())
                         del self.pos_turtle[(left,right)]
                         self.remove.add(i)
 
-                        #voir add_wall
-                        pos_a = left.pos()
-                        pos_b = right.pos()
-                        if pos_a[0] == pos_b[0] and self.out is None and (round(pos_a[0]),round(max(pos_a[1],pos_b[1]))) != (Laby.RAY,Laby.RAY) :
-                                #le mur est vertical
-                                self.out = (round(pos_a[0]),round(max(pos_a[1],pos_b[1])))
-                        elif self.out is None and (round(pos_a[0]),round(max(pos_a[1],pos_b[1]))) != (Laby.RAY,Laby.RAY) :
-                                self.out = (round(max(pos_a[0],pos_b[0])) ,round(pos_a[1]))
-                        else :#il n'y a pas lieu de créer une sortie ; on fait une imapasse
-                               left.goto(right.pos())
                 elif m in self.pos_tracker :
                         #déplacement impossible
                         left.goto(right.pos())#on fait une impasse
@@ -183,56 +175,38 @@ i est nécessaire pour être rajouté à self.remove
 
         def draw_border(self):
                 """Cette fonction dessine la bordure autour du labyrinthe, sauf pour l'emplacement de la sortie"""
-                steps_per_side = (2*Laby.RAY)//Laby.UNIT#le nombre de cases par côté
+                steps_per_side = (2*Laby.RAY)//Laby.UNIT
                 t = turtle.RawTurtle(self.screen)
                 t.ht()
                 t.speed(0)
                 t.up()
-                t.goto(Laby.RAY,Laby.RAY)# coin en haut à droite
+                t.goto(-Laby.RAY,-Laby.RAY)# coin en bas à gauche
                 t.down()
-                t.right(90)
-                t_ = t.clone()
-                t_.right(90)
-                #on doit aborder chaque côté par le coin en haut à droite (un mur est défini par le coin en haut à droite)
-                #on crée donc deux turtles qui feront chacunes un demi-périmètre en partant de ce coin
-
-                #t tourne en sens +
-                #t_ tourne en sens -
-
-                for a in range(2):#2 car 4 côtés du labytinthe // 2 turtles qui y travaillent
-                        for b in range(steps_per_side):
-                                for cursor in (t,t_):
-                                        if cursor.pos() == self.out :#si on est sur la sortie, on ne dessine pas de bordure
-                                                cursor.up()
-                                                cursor.forward(Laby.UNIT)
-                                                cursor.down()
-                                        else :#sinon, on dessine ET on rajoute le mur qui correspond
-                                                start = cursor.pos()
-                                                cursor.forward(Laby.UNIT)
-                                                self.add_wall(start,cursor.pos())
-                        t.right(90)
-                        t_.left(90)
-                self.screen.update()#cette ligne semble nécessaire ; elle met à jour le dessin global du labyrinthe
+                for _ in range(4) :
+                        for _ in range(steps_per_side) :
+                                p = t.pos()
+                                t.forward(Laby.UNIT)
+                                if Laby.middle((p[0],t.xcor()),(p[1],t.ycor())) == self.out :
+                                        t.undo()
+                                        t.up()
+                                        t.forward(Laby.UNIT)
+                                        t.down()
+                        t.left(90)
+                self.screen.update()
 
         def add_wall(self,pos_a,pos_b):
                 """Ajoute le mur de coordonnées délimité par pos_a et pos_b à la bonne clé de self.walls"""
-
-                if pos_a[0] == pos_b[0]:#le mur est vertical
-                    self.walls["v"].add((int(pos_a[0]), int(max(pos_a[1],pos_b[1]))))
-                else :#le mur est horizontal
-                        self.walls["h"].add((int(max(pos_a[0],pos_b[0])), int(pos_a[1])))
-                        self.walls["h"].add((int(max(pos_a[0],pos_b[0])-Laby.UNIT/2), int(pos_a[1])))
-
+                self.walls.add(Laby.middle((pos_a[0],pos_b[0]),(pos_a[1],pos_b[1])))
 
         def middle(x,y) :
                 """renvoie (moyenne de x, moyenne de y)"""
-                return (sum(x)/len(x),sum(y)/len(y))
+                return (round(sum(x)/len(x)),round(sum(y)/len(y)))
 
         """Méthodes de déplacement : déplacent le couple (left, right).
-le(s) premiers(s) déplacement(s) concerne(nt) toujours left, puis right le cas échéant.
-Il y a toujours deux déplacements (sans compter les rotations)
-paramètre fork : faire un/des embranchement(s). 0<=fork<=3 : entier sur deux bits => nième bit = faire un embranchement lors du nième déplacement
-siilent permet de ne pas interagir avec pos_tracker, adding et add_wall. Il force fork=0"""
+        le(s) premiers(s) déplacement(s) concerne(nt) toujours left, puis right le cas échéant.
+        Il y a toujours deux déplacements (sans compter les rotations)
+        paramètre fork : faire un/des embranchement(s). 0<=fork<=3 : entier sur deux bits => nième bit = faire un embranchement lors du nième déplacement
+        siilent permet de ne pas interagir avec pos_tracker, adding et add_wall. Il force fork=0"""
 
         def forward(self,left,right,fork=0,silent=False):
                 if not silent :
@@ -356,7 +330,7 @@ siilent permet de ne pas interagir avec pos_tracker, adding et add_wall. Il forc
 
         def ahead(self,left,right,func=None):
                 """Cette méthode "explore" la case devant (left,right) et renvoie les coordonnées de son milieu
-ainsi les turtles "fantômes" utilisés, qui résultent de func(left,right,silent=True) ; func est self.forward par défaut"""
+                ainsi les turtles "fantômes" utilisés, qui résultent de func(left,right,silent=True) ; func est self.forward par défaut"""
                 if func is None :
                         func = self.forward
                 fake_left = left.clone()
@@ -372,7 +346,7 @@ ainsi les turtles "fantômes" utilisés, qui résultent de func(left,right,silen
 
         def parse_area(self,x,y,nth_call=0):
                 """teste si on peut atteindre un couple de turtles depuis la case de coordonnées (x,y) en moins de Laby.RANGE cases
-nth_call est utilisée pour prévenir les erreurs de récursivité"""
+                nth_call est utilisée pour prévenir les erreurs de récursivité"""
                 self.gone.add((x,y))
                 if (x,y) in self.pos_turtle.values() :
                         return True
@@ -385,6 +359,15 @@ nth_call est utilisée pour prévenir les erreurs de récursivité"""
                                 if self.parse_area(i,j,nth_call=nth_call+1) :
                                         return True
                         return False
+
+        def testme(self):
+                t = turtle.RawTurtle(self.screen)
+                t.up()
+                t.ht()
+                for w in self.walls :
+                        t.goto(w)
+                        t.dot(5,"red")
+
 
 class Game :
 
@@ -414,16 +397,16 @@ class Game :
 
         if self.playing:
             str.capitalize(event.keysym)
-            if str.capitalize(event.keysym) in keys_up:
-                self.move_y(self.players[keys_up.index(str.capitalize(event.keysym))], 10)
-            elif str.capitalize(event.keysym) in keys_down:
-                self.move_y(self.players[keys_down.index(str.capitalize(event.keysym))], -10)
-            elif str.capitalize(event.keysym) in keys_left:
-                self.move_x(self.players[keys_left.index(str.capitalize(event.keysym))], -10)
-            elif str.capitalize(event.keysym) in keys_right:
-                self.move_x(self.players[keys_right.index(str.capitalize(event.keysym))], 10)
-            elif str.capitalize(event.keysym) in keys_redo:
-                self.redo_move(move_number, coord_player, self.players[keys_redo.index(str.capitalize(event.keysym))])
+            if str.capitalize(event.keysym) in Parameters.keys["keys_up"]:
+                self.move_y(self.players[Parameters.keys["keys_up"].index(str.capitalize(event.keysym))], 10)
+            elif str.capitalize(event.keysym) in Parameters.keys["keys_down"]:
+                self.move_y(self.players[Parameters.keys["keys_down"].index(str.capitalize(event.keysym))], -10)
+            elif str.capitalize(event.keysym) in Parameters.keys["keys_left"]:
+                self.move_x(self.players[Parameters.keys["keys_left"].index(str.capitalize(event.keysym))], -10)
+            elif str.capitalize(event.keysym) in Parameters.keys["keys_right"]:
+                self.move_x(self.players[Parameters.keys["keys_right"].index(str.capitalize(event.keysym))], 10)
+            elif str.capitalize(event.keysym) in Parameters.keys["keys_redo"]:
+                self.redo_move(move_number, coord_player, self.players[Parameters.keys["keys_redo"].index(str.capitalize(event.keysym))])
             else:
                     return False
         else:
@@ -557,21 +540,20 @@ class Game :
         self.move(player.xcor(), player.ycor()+coord, player)
 
     def get_walls(self, walls):
-        self.walls = walls["h"] | walls["v"]
+        self.walls = walls
 
     def get_out(self, out):
         self.out = list(out)
-        #Si la sortie est verticale, alors x = 200 ou -200
-        if self.out[0] == 200 or self.out[0] == -200:
-            self.out[1] = int(self.out[1]-(Laby.UNIT/2)) #On récupère le milieu de la case
-        #Si la sortie est horizontale, alors c'est y qui vaut 200 ou -200
-        if self.out[1] == 200 or self.out[1] == -200:
-            self.out[0] = int(self.out[0]-(Laby.UNIT/2)) #On récupère le milieu de la case
-        set(self.out)
-
 class Parameters :
 
     Players_Max = 3
+    keys = {     "keys_up" : ["Up", "Z", "Y"],
+                            "keys_down" : ["Down", "S", "H"],
+                            "keys_left" : ["Left", "Q", "G"],
+                            "keys_right" : ["Right", "D", "J"],
+                            "keys_redo" : ["A", "X", "N"]
+                      }
+    RAY = 200
 
     def __init__(self, parent):
         self.window = tkinter.Toplevel(parent, height = 600, width = 400)
@@ -582,13 +564,7 @@ class Parameters :
         self.data = {
         "RAY" : 200
         }
-        self.keys = {   "keys_up" : ["Up", "Z", "Y"],
-                        "keys_down" : ["Down", "S", "H"],
-                        "keys_left" : ["Left", "Q", "G"],
-                        "keys_right" : ["Right", "D", "J"],
-                        "keys_redo" : ["A", "X", "N"],
-                        "RAY" : 200
-                    }
+        self.keys = Parameters.keys
 
         #Exemple d'une configuration
         self.players = Ignition.PLAYERS
@@ -598,7 +574,6 @@ class Parameters :
     def set_players(self):
         for i in range(int(self.data["players"].get())):
             Ignition.PLAYERS = list(range(i+1))
-            print(Ignition.PLAYERS)
         self.get_settings()
 
     def set_settings(self):
@@ -647,6 +622,7 @@ class Ignition :
         self.players = Ignition.PLAYERS
         self.players_color = ["red", "green", "blue", "purple", "green", "yellow", "black", "pink", "grey"]
         self.buildfile = buildfile
+        self.is_in_game = False
         self.color = 0
 
         self.main_window = tkinter.Tk()
@@ -666,7 +642,6 @@ class Ignition :
         self.main_canvas = tkinter.Canvas(self.main_window, width=self.home_maze.size[0], height = self.home_maze.size[1])
         self.main_canvas.create_image(0,0, anchor = tkinter.NW, image=self.photo)
         self.main_canvas.pack()
-        print(self.is_in_game)
 
     def init_solo_game(self):
         self.is_in_game = True
@@ -680,7 +655,6 @@ class Ignition :
 
         #On initialise nos turtles de joueur(s)
         for i in self.game.players:
-            print(i)
             self.game.players[i] = turtle.RawTurtle(self.screen)
             self.game.players[i].st()
             self.game.players[i].up()
@@ -743,7 +717,6 @@ class Ignition :
                 self.init_solo_game()
             elif event.y > 430 and event.y < 480 and event.x > 160 and event.x < 440:
                 self.main_canvas.pack_forget()
-                print(Ignition.PLAYERS)
                 self.init_multi_game()
             elif event.y > 560 and event.y < 610 and event.x > 500 and event.x < 830:
                 self.main_canvas.pack_forget()
