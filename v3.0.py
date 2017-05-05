@@ -158,12 +158,14 @@ class Laby :
                         if self.out is None  :
                                 self.out = (Laby.middle((pos_a[0],pos_b[0]),(pos_a[1],pos_b[1])))
                         else :#il n'y a pas lieu de créer une sortie ; on fait une imapasse
-                               left.goto(right.pos())
+                                self.add_wall(left.pos(),right.pos())
+                                left.goto(right.pos())
                         del self.pos_turtle[(left,right)]
                         self.remove.add(i)
 
                 elif m in self.pos_tracker :
                         #déplacement impossible
+                        self.add_wall(left.pos(),right.pos())
                         left.goto(right.pos())#on fait une impasse
 
                         del self.pos_turtle[(left,right)]
@@ -191,12 +193,16 @@ class Laby :
                                         t.up()
                                         t.forward(Laby.UNIT)
                                         t.down()
+                                else :
+                                        self.add_wall(p,t.pos())
                         t.left(90)
                 self.screen.update()
 
         def add_wall(self,pos_a,pos_b):
                 """Ajoute le mur de coordonnées délimité par pos_a et pos_b à la bonne clé de self.walls"""
                 self.walls.add(Laby.middle((pos_a[0],pos_b[0]),(pos_a[1],pos_b[1])))
+                self.walls.add(pos_a)
+                self.walls.add(pos_b)
 
         def middle(x,y) :
                 """renvoie (moyenne de x, moyenne de y)"""
