@@ -579,7 +579,7 @@ class Parameters :
                             "keys_redo" : ["A", "X", "N"]
                       }
     Sounds = ["Never_Again", "K-B11"]
-    RAY = 200
+    RAY = Laby.RAY
 
     def __init__(self, parent):
         self.window = tkinter.Toplevel(parent, height = 600, width = 400)
@@ -590,15 +590,16 @@ class Parameters :
         
         #Nos données aussi
         self.data = {
-        "RAY" : 200
+        "RAY" : Parameters.RAY
         }
         
         self.get_settings()
         
 
     def set_players(self):
-        for i in range(int(self.data["players"].get())):
-            Ignition.PLAYERS = list(range(i+1))
+##        for i in range(int(self.data["players"].get())):
+##            Ignition.PLAYERS = list(range(i+1))
+        Ignition.PLAYERS = list(range(int(self.data["players"].get())))
         self.set_settings()
         self.get_settings()
 
@@ -606,7 +607,7 @@ class Parameters :
         print(self.entries)
         for command, key in self.entries.items():
                 print(command, key)
-                Parameters.keys[str(command)] = key.get()
+                Parameters.keys[str(command)][:len(key)] = [widget.get() for widget in key]
                 print(Parameters.keys)
     
 
@@ -624,29 +625,52 @@ class Parameters :
         self.labels["Commandes"] = tkinter.Label(self.window, text="Commandes").grid(column=1, row=3)
         self.labels["sound"] = tkinter.Label(self.window, text="Choisissez votre musique :").grid(column=1, row=2)
         self.data["sound"] = tkinter.Spinbox(self.window, values=Parameters.Sounds).grid(column=2, row=2)
-        for i in range(len(Ignition.PLAYERS)):
-            #On fait les labels de la page
-            self.labels["players"] = tkinter.Label(self.window, text="Joueur "+str(i+1)).grid(column=2+i, row=4)
-            self.labels["keys_up"] = tkinter.Label(self.window, text="Haut").grid(column=1, row=5)
-            self.labels["keys_down"] = tkinter.Label(self.window, text="Bas").grid(column=1, row=6)
-            self.labels["keys_left"] = tkinter.Label(self.window, text="Gauche").grid(column=1, row=7)
-            self.labels["keys_right"] = tkinter.Label(self.window, text="Droite").grid(column=1, row=8)
-            self.labels["keys_redo"] = tkinter.Label(self.window, text="Refaire").grid(column=1, row=9)
-            self.entries["keys_up"] = tkinter.Entry(self.window)
-            self.entries["keys_up"].insert(0,Parameters.keys["keys_up"][i])
-            self.entries["keys_up"].grid(column=2+i, row=5, padx=5, pady=5)
-            self.entries["keys_down"] = tkinter.Entry(self.window)
-            self.entries["keys_down"].insert(0, Parameters.keys["keys_down"][i])
-            self.entries["keys_down"].grid(column=2+i, row=6, padx=5, pady=5)
-            self.entries["keys_left"] = tkinter.Entry(self.window)
-            self.entries["keys_left"].insert(0, Parameters.keys["keys_left"][i])
-            self.entries["keys_left"].grid(column=2+i, row=7, padx=5, pady=5)
-            self.entries["keys_right"] = tkinter.Entry(self.window)
-            self.entries["keys_right"].insert(0, Parameters.keys["keys_right"][i])
-            self.entries["keys_right"].grid(column=2+i, row=8, padx=5, pady=5)
-            self.entries["keys_redo"] = tkinter.Entry(self.window)
-            self.entries["keys_redo"].insert(0, Parameters.keys["keys_redo"][i])                                      
-            self.entries["keys_redo"].grid(column=2+i, row=9, padx=5, pady=5)
+##        for i in range(len(Ignition.PLAYERS)):
+##            #On fait les labels de la page
+        if True :
+            self.labels["players"] = [tkinter.Label(self.window, text="Joueur "+str(i+1)) for i in Ignition.PLAYERS]
+            [widget.grid(column=2+i, row=4) for i,widget in enumerate(self.labels["players"])]
+            
+            self.labels["keys_up"] = tkinter.Label(self.window, text="Haut")
+            self.labels["keys_up"].grid(column=1, row=5)
+            self.labels["keys_down"] = tkinter.Label(self.window, text="Bas")
+            self.labels["keys_down"].grid(column=1, row=6)
+            self.labels["keys_left"] = tkinter.Label(self.window, text="Gauche")
+            self.labels["keys_left"].grid(column=1, row=7)
+            self.labels["keys_right"] = tkinter.Label(self.window, text="Droite")
+            self.labels["keys_right"].grid(column=1, row=8)
+            self.labels["keys_redo"] = tkinter.Label(self.window, text="Refaire")
+            self.labels["keys_redo"].grid(column=1, row=9)
+
+            self.entries["keys_up"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
+            for i,widget in enumerate(self.entries["keys_up"]) :
+                    widget.insert(0,Parameters.keys["keys_up"][i])
+                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    widget.grid(column=2+i, row=5, padx=5, pady=5)
+
+            self.entries["keys_down"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
+            for i,widget in enumerate(self.entries["keys_down"]) :
+                    widget.insert(0, Parameters.keys["keys_down"][i])
+                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    widget.grid(column=2+i, row=6, padx=5, pady=5)
+
+            self.entries["keys_left"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
+            for i,widget in enumerate(self.entries["keys_left"]) :
+                    widget.insert(0, Parameters.keys["keys_left"][i])
+                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    widget.grid(column=2+i, row=7, padx=5, pady=5)
+
+            self.entries["keys_right"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
+            for i,widget in enumerate(self.entries["keys_right"]) :
+                    widget.insert(0, Parameters.keys["keys_right"][i])
+                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    widget.grid(column=2+i, row=8, padx=5, pady=5)
+
+            self.entries["keys_redo"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
+            for i,widget in enumerate(self.entries["keys_redo"]) :
+                    widget.insert(0, Parameters.keys["keys_redo"][i])
+                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    widget.grid(column=2+i, row=9, padx=5, pady=5)
 
 
 class Ignition :
