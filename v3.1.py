@@ -3,7 +3,7 @@ import turtle
 import time
 from random import choice, randint
 from PIL import Image, ImageTk
-import pyglet
+import pyglet.media
 
 """
 Version 3.1 du projet Super Maze
