@@ -642,34 +642,43 @@ class Parameters :
             self.labels["keys_redo"] = tkinter.Label(self.window, text="Refaire")
             self.labels["keys_redo"].grid(column=1, row=9)
 
+            def handler(widget,event):
+                    widget.insert(0,event.char)
+
+            def deco(handler,widget):
+                    def f(handle):
+                            return handler(widget,handle)
+                    return f
+                
+
             self.entries["keys_up"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
             for i,widget in enumerate(self.entries["keys_up"]) :
                     widget.insert(0,Parameters.keys["keys_up"][i])
-                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    #widget.bind("<Key>",deco(handler,widget))
                     widget.grid(column=2+i, row=5, padx=5, pady=5)
 
             self.entries["keys_down"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
             for i,widget in enumerate(self.entries["keys_down"]) :
                     widget.insert(0, Parameters.keys["keys_down"][i])
-                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    #widget.bind("<Key>",deco(handler,widget))
                     widget.grid(column=2+i, row=6, padx=5, pady=5)
 
             self.entries["keys_left"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
             for i,widget in enumerate(self.entries["keys_left"]) :
                     widget.insert(0, Parameters.keys["keys_left"][i])
-                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    #widget.bind("<Key>",deco(handler,widget))
                     widget.grid(column=2+i, row=7, padx=5, pady=5)
 
             self.entries["keys_right"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
             for i,widget in enumerate(self.entries["keys_right"]) :
                     widget.insert(0, Parameters.keys["keys_right"][i])
-                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    #widget.bind("<Key>",deco(handler,widget))
                     widget.grid(column=2+i, row=8, padx=5, pady=5)
 
             self.entries["keys_redo"] = [tkinter.Entry(self.window) for i in Ignition.PLAYERS]
             for i,widget in enumerate(self.entries["keys_redo"]) :
                     widget.insert(0, Parameters.keys["keys_redo"][i])
-                    widget.bind("<Key>",lambda event : widget.insert(0,event.char))
+                    #widget.bind("<Key>",deco(handler,widget))
                     widget.grid(column=2+i, row=9, padx=5, pady=5)
 
 
