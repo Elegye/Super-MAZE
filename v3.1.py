@@ -3,7 +3,7 @@ import turtle
 import time
 from random import choice, randint
 from PIL import Image, ImageTk
-#import pyglet
+import pyglet
 
 """
 Version 3.1 du projet Super Maze
@@ -395,7 +395,7 @@ class Game :
         self.out = ()
         self.results = {}
         self.ignition = ignition
-        #self.continuous_sound("Never_Again")
+        self.continuous_sound("Never_Again")
 
     def binding(self, event):
         """
@@ -564,10 +564,10 @@ class Game :
         tkinter.Button(toplevel, text="Retour à l'accueil", command=lambda :self.ignition.set_home() and toplevel.delete()).pack()
         
     def continuous_sound(self, sound):
-        player = pyglet.media.Player()
-        source = pyglet.media.load("src/"+str(sound)+".wav")
-        player.queue(source)
-        player.play()
+        self.player = pyglet.media.Player()
+        self.source = pyglet.media.load(str(sound)+".wav")
+        self.player.queue(self.source)
+        self.player.play()
 
 class Parameters :
 
@@ -696,7 +696,7 @@ class Ignition :
     def set_home(self):
         self.is_in_game = False
         self.main_window.title("Super Maze")
-        self.home_maze = Image.open("src/home_maze.png")
+        self.home_maze = Image.open("home_maze.png")
         self.photo = ImageTk.PhotoImage(self.home_maze)
         self.main_canvas = tkinter.Canvas(self.main_window, width=self.home_maze.size[0], height = self.home_maze.size[1])
         self.main_canvas.create_image(0,0, anchor = tkinter.NW, image=self.photo)
